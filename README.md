@@ -3,7 +3,7 @@
 This project is an API that allows our clients to integrate the Nielsen SDK in DOM-less environments, e.g., React Native, Node, etc.
 
 ## Installation
-Install with `npm install https://github.com/NielsenDigitalSDK/bsdk-domless` and import the `BsdkInstance` into video player component
+Install with `npm install https://github.com/NielsenDigitalSDK/bsdk-domless#develop` and import the `BsdkInstance` into video player component
 
 `import { BsdkInstance } from 'bsdk-domless'`
 
