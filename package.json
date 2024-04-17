@@ -1,6 +1,6 @@
 {
   "name": "bsdk-domless",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Nielsen BSDK Domless Solution",
   "main": "bundle.min.js",
   "scripts": {
