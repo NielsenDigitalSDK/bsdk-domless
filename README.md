@@ -15,7 +15,7 @@ Install with `npm install https://github.com/NielsenDigitalSDK/bsdk-domless#deve
 ## Exposed Interface
 The exposed interface is as follows:
 1. `ggPM` - method to send messages to the Nielsen SDK
-2. `processEvent` _(still in progress)_ - method to send app state to the Nielsen SDK, e.g., Focus, Blur, AppClose, etc.
+2. `processEvent` - method to send app state to the Nielsen SDK, e.g., Focus, Blur, AppClose
 
 ### Events that can be passed to `ggPM` method
 1. `loadmetadata` - This event is used to send DCR Video metadata to the Nielsen SDK. This event should be called when the video metadata is loaded.
@@ -57,6 +57,20 @@ The exposed interface is as follows:
     instance.ggPM('sendid3', '<id3 metadata received>');
 ```
 
+### Events that can be passed to and processed by `processEvent` method
+1. `Blur` - This event should be passed to processEvent when the app goes to the background.
+```javascript
+    instance.processEvent({'type': 'Blur', 'timestamp': Date.now()});
+```
+2. `Focus` - This event should be passed to processEvent when the app goes to the foreground.
+```javascript
+    instance.processEvent({'type': 'Focus', 'timestamp': Date.now()});
+```
+3. `AppClose` - This event should be passed prior to closing the app.
+```javascript
+    instance.processEvent({'type': 'AppClose', 'timestamp': Date.now()});
+```
+
 ## Sample DCR Video Integration
 ```javascript
 import { BsdkInstance } from 'bsdk-domless';
@@ -64,6 +78,43 @@ import { BsdkInstance } from 'bsdk-domless';
 const nsdkConfig = {
     app_id: 'DHG163HR-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
     instance_name: 'videoInstance',
+};
+
+const implementationHooks = {
+    Log: {
+        info: function (log) {
+          console.info(log);
+        },
+        debug: function (log) {
+          console.debug(log);
+        },
+        warn: function (log) {
+          console.warn(log);
+        },
+        error: function (error) {
+          console.error(error);
+        }
+      },
+    Fetch: async function (url, options) {
+        console.log('Fetching from url: ', url);
+        const response = await fetch(url, options);
+        if (response.ok) {
+          console.log('Response is OK');
+          return response;
+        }
+      },
+    SetTimeout: async function (args) {
+        setTimeout(...args);
+      },
+    ClearTimeout(args) {
+        clearTimeout(...args);
+      },
+    SetInterval(args) {
+        setInterval(...args);
+      },
+    ClearInterval(args) {
+        clearInterval(...args);
+      }
 };
 
 const bsdk = new BsdkInstance(
@@ -75,7 +126,8 @@ const bsdk = new BsdkInstance(
             nol_sdkDebug: 'debug',
             // reference SDK interface documentation
             // for additonal metadata properties
-        }
+        },
+		implementationHooks
 );
 
 // Sample VideoPlayer component
