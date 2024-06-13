@@ -70,8 +70,21 @@ The exposed interface is as follows:
 ```javascript
     instance.processEvent({'type': 'AppClose', 'timestamp': Date.now()});
 ```
+
+### status.ok()
+Initialization of the instance can be done with `status.ok()` function or use Promise handling approach
+```javascript
+const instance = await new BsdkInstance(appID, instanceName, instanceMetadata, implementationHooks);
+
+if (instance && instance.status.ok()) {
+    expect(instance).not.toBe(undefined);
+    expect(instance.status.ok()).toBe(true);
+}
+```
+
 ## Sample Nielsen BSDK-Domless NodeJS Example
 * [Nielsen bsdk-domless NodeJS Repository Example](https://github.com/NielsenDigitalSDK/bsdk-domless-samples/tree/main/nodejs)
+
 
 ## Sample DCR Video Integration
 ```javascript
@@ -98,8 +111,14 @@ const implementationHooks = {
         }
       },
     Fetch: async function (url, options) {
-        console.log('Fetching from url: ', url);
-        const response = await fetch(url, options);
+        // Pass in User-Agent to fetch data
+        const clientOpts = {
+            headers: {
+                "User-Agent": "application-name/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)"
+            }
+        }
+		const data = Object.assign(options, clientOpts);
+        const response = await fetch(url, data);
         if (response.ok) {
           console.log('Response is OK');
           return response;
@@ -197,3 +216,13 @@ const VideoPlayer = (props) => {
 };
 
 ```
+
+## Release Notes
+### June 13, 2024
+#### DOM-less SDK version 1.0.7
+1. Support for capturing user optout during SDK initialization and/or configuration file
+2. Pass in User-Agent string as part of headers in Fetch impelementation hook (UA passed in by client)
+3. Support for capturing hashed email through SDK initialization
+4. Support of Storage implementation hook and will be used first party id
+5. `.ok()` option for SDK initialization call
+
