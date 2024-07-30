@@ -70,9 +70,9 @@ The exposed interface is as follows:
 ```javascript
     instance.processEvent({'type': 'AppClose', 'timestamp': Date.now()});
 ```
-
+## SDK Initialization
 ### status.ok()
-Initialization of the instance can be done with `status.ok()` function or use Promise handling approach
+Initialization and check for SDK instance can be done with `status.ok()` function
 ```javascript
 const instance = await new BsdkInstance(appID, instanceName, instanceMetadata, implementationHooks);
 
@@ -97,54 +97,77 @@ const nsdkConfig = {
 
 const implementationHooks = {
     Log: {
-        info: function (log) {
-          console.info(log);
-        },
-        debug: function (log) {
-          console.debug(log);
-        },
-        warn: function (log) {
-          console.warn(log);
-        },
-        error: function (error) {
-          console.error(error);
-        }
-      },
-    Fetch: async function (url, options) {
-        // Pass in User-Agent to fetch data
-        const clientOpts = {
-            headers: {
-                "User-Agent": "application-name/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)"
+		info: function (log: string) {
+		  console.info(log);
+		},
+		debug: function (log: string) {
+		  console.debug(log);
+		},
+		warn: function (log: string) {
+		  console.warn(log);
+		},
+		error: function (error: string) {
+		  console.error(error);
+		}
+	  },
+	Storage: {
+		setItem: async function (key: any, value: string) {
+            /**
+             * Sets a string value for given key. This operation can either modify an existing entry, if it did exist for given key, or add new one otherwise.
+             * In order to store object value, you need to serialize it, e.g. using JSON.stringify().
+            */
+		},
+		getItem: async function (key: any) {
+            /**
+             * Gets a string value for given key. This function can either return a string value for existing key or return null otherwise.
+             * In order to store object value, you need to deserialize it, e.g. using JSON.parse().
+            */
+		},
+		removeItem: async function (key: any) {
+            /**
+             * Removes item for a key, invokes (optional) callback once completed.
+            */
+		}
+	  },
+        Fetch: async function (url: string | URL | Request, options: any) {
+            /**
+             * We require that client pass in User-Agent header via options in Fetch request
+            */
+            const clientOpts = {
+                headers: {
+                    "User-Agent": "react-native-domless/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)"
+                }
             }
+            const data = Object.assign(options, clientOpts);
+            const response = await fetch(url, data);
+            if (response.ok) {
+                return response;
+            } else {
+                throw new Error('Request failed');
+            }
+        },
+        SetTimeout: function (callback: () => void, timeout: number | undefined) {
+            return setTimeout(callback, timeout);
+        },
+        SetInterval: function (callback: () => void, interval: number | undefined) {
+            return setInterval(callback, interval);
+        },
+        ClearTimeout: function (timeout: string | number | NodeJS.Timeout | undefined) {
+            clearTimeout(timeout);
+        },
+        ClearInterval: function (interval: string | number | NodeJS.Timeout | undefined) {
+            clearInterval(interval);
         }
-		const data = Object.assign(options, clientOpts);
-        const response = await fetch(url, data);
-        if (response.ok) {
-          console.log('Response is OK');
-          return response;
-        }
-      },
-    SetTimeout: async function (args) {
-        setTimeout(...args);
-      },
-    ClearTimeout(args) {
-        clearTimeout(...args);
-      },
-    SetInterval(args) {
-        setInterval(...args);
-      },
-    ClearInterval(args) {
-        clearInterval(...args);
-      }
 };
 
-const bsdk = new BsdkInstance(
+const nSdkInstance = new BsdkInstance(
         nsdkConfig.app_id,
         nsdkConfig.instance_name,
         {
             appName: 'BSDK RN Sample App',
             deviceId: 'testDeviceId',
-            nol_sdkDebug: 'debug',
+            nol_sdkDebug: 'debug', // remove debug flag when going to production
+            domlessEnv: // "1" for React Native | "2" for Amazon | "3" for NodeJS | "4" for Custom
             // reference SDK interface documentation
             // for additonal metadata properties
         },
@@ -153,7 +176,19 @@ const bsdk = new BsdkInstance(
 
 // Sample VideoPlayer component
 const VideoPlayer = (props) => {
-    // Sample video metadata could be something as follows:
+    /**
+     * Implementation of video player component will vary across the board, for Nielsen DOM-less SDK integration
+     * clients need only setup event listeners with corresponding ggPM() calls.
+     * 
+     * Please refer to chosen video player documentation on available events
+    */
+
+    const video = useRef<Video>(null);
+    let previousPlayhead = 0; // keep track of previous playhead position
+    let metadataLoaded = false; // in case of replay scenario set flag for metadata load
+
+
+    // Sample video metadata
     const videometadata = {
         'type': 'content',
         'length': '300',
@@ -166,39 +201,52 @@ const VideoPlayer = (props) => {
         'dataSrc': 'cms'
     }
 
-    let previousPlayhead = 0;
-    let playhead;
+    const setUpEventListeners = (): void => {
+        video.addEventListener('ended', onEnded);
+        video.addEventListener('timeupdate', onTimeUpdate);
+        video.addEventListener('playing', onPlay);
+        video.addEventListener('pause', onPause);
+    };
 
-   // Load video metadata when video loads and prior to sending playhead positions
-    const handlePlaybackLoad = () => {
-        if(bsdk) {
-            bsdk.then(instance => {
-                instance.ggPM('loadmetadata', videometadata);
-            });
+    const onEnded = () => {
+        // Nielsen SDK ggPM 'end' event
+        if (nSdkInstance) {
+        nSdkInstance.then((instance: any) => {
+            instance.ggPM('end', Math.round(video.currentTime));
+            metadataLoaded = false;
+        });
         }
     };
 
-    // Send the current playhead position to the Nielsen SDK
-    const handlePlaybackProgress = (data) => {
-        let currentTime = data.currentTime;
-        playhead = Math.round(data.currentTime);
-
-        if (playhead !== previousPlayhead && playhead > 0) {
-            previousPlayhead = playhead;
-            // BSDK setPlayheadPosition
-            if(bsdk) {
-                bsdk.then(instance => {
-                    instance.ggPM('setplayheadposition', playhead);
+    const onTimeUpdate = () => {
+        const currPlayhead = Math.round(video.current?.currentTime!);
+        if (currPlayhead > 0 && currPlayhead !== previousPlayhead) {
+            previousPlayhead = currPlayhead;
+            // Nielsen SDK ggPM 'setplayheadposition' event
+            if (nSdkInstance) {
+                nSdkInstance.then((instance: any) => {
+                    instance.ggPM('setplayheadposition', currPlayhead);
                 });
             }
         }
     };
 
-    // Send end event to Nielsen SDK
-    const handlePlaybackEnd = () => {
-        if (bsdk) {
-            bsdk.then(instance => {
-                instance.ggPM('end', playhead);
+    // NOTE: some players may have an event when video metadata is loaded, recommended to use if available. E.g. loadedmetadata
+    const onPlay = () => {
+        // Nielsen SDK ggPM 'loadmetadata' event
+        if (nSdkInstance && !metadataLoaded) {
+            nSdkInstance.then((instance: any) => {
+                instance.ggPM('loadmetadata', videometadata);
+                metadataLoaded = true;
+            });
+        }
+    };
+
+    const onPause = () => {
+        // Nielsen SDK ggPM 'pause' event
+        if (nSdkInstance) {
+            nSdkInstance.then((instance: any) => {
+            instance.ggPM('pause', Math.round(video.currentTime));
             });
         }
     };
@@ -207,9 +255,6 @@ const VideoPlayer = (props) => {
         <View>
             <Video
                 source={{ uri: 'https://www.w3schools.com/html/mov_bbb.mp4' }}
-                onPlaybackLoad={handlePlaybackLoad}
-                onProgress={handlePlaybackProgress}
-                onEnd={handlePlaybackEnd}
             />
         </View>
     );
@@ -218,11 +263,19 @@ const VideoPlayer = (props) => {
 ```
 
 ## Release Notes
+### July 31, 2024
+#### DOM-less SDK version 1.0.0
+- Support for Nielsen Digital Content Ratings (DCR) video product
+- Support for Nielsen Digital TV Ratings (DTVR) product
+- Support for various domless environments like NodeJS, ReactNative etc.
+- Added features like First Party ID, Optout, collections of persistent identifiers like hashed email and UID2, collection of deviceID etc.
+- Support SDK multi-instance
+
 ### June 13, 2024
-#### DOM-less SDK version 1.0.7
-1. Support for capturing user optout during SDK initialization and/or configuration file
-2. Pass in User-Agent string as part of headers in Fetch impelementation hook (UA passed in by client)
-3. Support for capturing hashed email through SDK initialization
-4. Support of Storage implementation hook and will be used first party id
-5. `.ok()` option for SDK initialization call
+#### DOM-less SDK version 0.0.7
+- Support for capturing user optout during SDK initialization and/or configuration file
+- Pass in User-Agent string as part of headers in Fetch impelementation hook (UA passed in by client)
+- Support for capturing hashed email through SDK initialization
+- Support of Storage implementation hook and will be used first party id
+- `.ok()` option for checking SDK initialization
 
