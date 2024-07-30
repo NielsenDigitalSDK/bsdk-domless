@@ -1,0 +1,11 @@
+{
+  "name": "bsdk-domless",
+  "version": "1.0.0",
+  "description": "Nielsen BSDK Domless Solution",
+  "main": "bundle.cjs.min.js",
+  "module": "bundle.esm.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": ""
+}
