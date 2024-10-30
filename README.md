@@ -11,7 +11,7 @@ This project is an API that allows our clients to integrate the Nielsen SDK in D
 
 ## Installation
 
-Install with `npm install https://github.com/NielsenDigitalSDK/bsdk-domless#1.0.0` and import the `BsdkInstance` into video player component
+Install with `npm install https://github.com/NielsenDigitalSDK/bsdk-domless#1.1.0` and import the `BsdkInstance` into video player component
 
 `import { BsdkInstance } from 'bsdk-domless'`
 
@@ -298,6 +298,13 @@ const VideoPlayer = (props) => {
 ```
 
 ## Release Notes
+
+### Octorber 30, 2024
+
+#### DOM-less SDK version 1.1.0
+
+- Support for Nielsen Digital Content Ratings (DCR) static product.
+- Support to cache pings when network is not available.
 
 ### July 31, 2024
 
