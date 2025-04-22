@@ -299,6 +299,12 @@ const VideoPlayer = (props) => {
 
 ## Release Notes
 
+### April 22, 2025
+
+#### DOM-less SDK version 1.2.0
+
+- Added @types folder in package for TypeScript related errors.
+
 ### Octorber 30, 2024
 
 #### DOM-less SDK version 1.1.0
