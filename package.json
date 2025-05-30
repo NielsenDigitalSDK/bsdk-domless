@@ -4,6 +4,7 @@
   "description": "Nielsen BSDK Domless Solution",
   "main": "bundle.cjs.min.js",
   "module": "bundle.esm.min.js",
+  "types": "@types/bsdk-domless.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -11,7 +11,7 @@ This project is an API that allows our clients to integrate the Nielsen SDK in D
 
 ## Installation
 
-Install with `npm install https://github.com/NielsenDigitalSDK/bsdk-domless#1.1.0` and import the `BsdkInstance` into video player component
+Install with `npm install https://github.com/NielsenDigitalSDK/bsdk-domless` and import the `BsdkInstance` into video player component
 
 `import { BsdkInstance } from 'bsdk-domless'`
 
