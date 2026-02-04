@@ -298,6 +298,11 @@ const VideoPlayer = (props) => {
 ```
 
 ## Release Notes
+### February 04, 2026
+
+#### DOM-less SDK version 1.2.1
+
+- Updated sfcode and nol_sdkDebug precedence to fetch it from config.
 
 ### April 22, 2025
 
