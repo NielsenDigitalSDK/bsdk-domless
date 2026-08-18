@@ -161,23 +161,14 @@ const implementationHooks = {
             */
 		}
 	  },
-        Fetch: async function (url: string | URL | Request, options: any) {
-            /**
-             * We require that client pass in User-Agent header via options in Fetch request
-            */
-            const clientOpts = {
-                headers: {
-                    "User-Agent": "react-native-domless/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)"
-                }
-            }
-            const data = Object.assign(options, clientOpts);
-            const response = await fetch(url, data);
-            if (response.ok) {
-                return response;
-            } else {
-                throw new Error('Request failed');
-            }
-        },
+        Fetch: async function (url:string | URL | Request, options:any) {
+        const response = await fetch(url, options);
+        if (response.ok) {
+          return response;
+        } else {
+          console.error(`Request Failed`);
+        }
+      },
         SetTimeout: function (callback: () => void, timeout: number | undefined) {
             return setTimeout(callback, timeout);
         },
