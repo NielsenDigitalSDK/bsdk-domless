@@ -289,6 +289,14 @@ const VideoPlayer = (props) => {
 ```
 
 ## Release Notes
+### November 25, 2026
+
+#### DOM-less SDK version 1.3.0
+
+- Enhancement of Error pings: Standardize error ping format across mobile and browser SDK.
+- Add FL/PFL (Flush/previous flush) events to the DCR event data in timer pings.
+- Fixed minor bugs to improve error pings.
+
 ### February 04, 2026
 
 #### DOM-less SDK version 1.2.1
